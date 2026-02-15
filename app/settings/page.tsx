@@ -133,7 +133,7 @@ export default function SettingsPage() {
                 No Names Mode
               </label>
               <p className="text-xs text-gray-500 mt-1">
-                When enabled, claimed blasts show "Claimed" without the person's name
+                When enabled, claimed blasts show &quot;Claimed&quot; without the person&apos;s name
               </p>
             </div>
           </div>
