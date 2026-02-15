@@ -63,8 +63,10 @@ export default function BellPage({ params }: { params: Promise<{ householdId: st
 
           if (response.ok) {
             const data = await response.json();
-            storedMemberId = data.memberId;
-            localStorage.setItem(storageKey, storedMemberId);
+            if (data.memberId) {
+              storedMemberId = data.memberId;
+              localStorage.setItem(storageKey, data.memberId);
+            }
           }
         } catch (error) {
           console.error('Error creating anonymous member:', error);
