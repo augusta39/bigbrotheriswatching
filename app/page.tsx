@@ -8,13 +8,7 @@ export default function Home() {
   const [inviteCode, setInviteCode] = useState('');
 
   useEffect(() => {
-    // Check if user is already a member
-    const existingMemberId = localStorage.getItem('ghostbell_memberId');
-    const existingHouseholdId = localStorage.getItem('ghostbell_householdId');
-
-    if (existingMemberId && existingHouseholdId) {
-      router.push(`/h/${existingHouseholdId}`);
-    }
+    // Bell page handles auto-join, so no redirect needed
   }, [router]);
 
   const handleJoinWithCode = (e: React.FormEvent) => {
