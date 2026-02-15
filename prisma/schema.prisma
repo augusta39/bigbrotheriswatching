@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Household {
+  id             String   @id @default(cuid())
+  name           String
+  inviteCode     String   @unique
+  personaDefault String   @default("ghost") // ghost | space | fairy | neutral
+  createdAt      DateTime @default(now())
+
+  members          Member[]
+  blasts           Blast[]
+  categoryPresets  CategoryPreset[]
+  eventPresets     EventPreset[]
+}
+
+model Member {
+  id          String   @id @default(cuid())
+  householdId String
+  displayName String   @default("Anonymous")
+  isAnonymous Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  lastActiveAt DateTime @default(now())
+
+  household         Household  @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  blastsCreated     Blast[]    @relation("BlastCreator")
+  blastsClaimed     Blast[]    @relation("BlastClaimer")
+  blastsDone        Blast[]    @relation("BlastDone")
+  reactions         Reaction[]
+}
+
+model Blast {
+  id            String   @id @default(cuid())
+  householdId   String
+  categoryLabel String   // 1-2 word category (e.g., "Laundry", "Dishes")
+  eventLabel    String   // 1-2 word event (e.g., "Done", "Full")
+  urgency       String   @default("whenever") // whenever | soon | asap
+  status        String   @default("OPEN") // OPEN | CLAIMED | DONE
+
+  createdByMemberId String
+  createdAt         DateTime @default(now())
+
+  claimedByMemberId String?
+  claimedAt         DateTime?
+
+  doneByMemberId    String?
+  doneAt            DateTime?
+
+  household     Household  @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  createdBy     Member     @relation("BlastCreator", fields: [createdByMemberId], references: [id])
+  claimedBy     Member?    @relation("BlastClaimer", fields: [claimedByMemberId], references: [id])
+  doneBy        Member?    @relation("BlastDone", fields: [doneByMemberId], references: [id])
+  reactions     Reaction[]
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  blastId   String
+  memberId  String
+  kind      String   // MINE | ON_IT | NOT_ME | ACK
+  createdAt DateTime @default(now())
+
+  blast  Blast  @relation(fields: [blastId], references: [id], onDelete: Cascade)
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([blastId, memberId, kind])
+}
+
+model CategoryPreset {
+  id          String   @id @default(cuid())
+  householdId String
+  label       String   // 1-2 words max (e.g., "Laundry", "Dishes", "Shared Space")
+  createdAt   DateTime @default(now())
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@unique([householdId, label])
+}
+
+model EventPreset {
+  id          String   @id @default(cuid())
+  householdId String
+  label       String   // 1-2 words max (e.g., "Done", "Full", "Needed")
+  createdAt   DateTime @default(now())
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@unique([householdId, label])
+}
